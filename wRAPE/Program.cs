@@ -1,6 +1,4 @@
-﻿// Copyright (C) 2014 Aura Project
-// 
-// Written by exec (exec@mabinoger.de)
+﻿// wRAPE - World data converter
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
