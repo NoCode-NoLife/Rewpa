@@ -1,4 +1,4 @@
-﻿// wRAPE - World data converter
+﻿// rewpa - World data converter
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using wRAPE.Properties;
+using rewpa.Properties;
 
-namespace wRAPE
+namespace rewpa
 {
 	class Program
 	{
@@ -33,7 +33,7 @@ namespace wRAPE
 			var sPath = Settings.Default.Save;
 			var path = "";
 
-			Console.WriteLine("wRAPE");
+			Console.WriteLine("rewpa");
 			Console.WriteLine();
 			Console.WriteLine("Hi there, {0}! Would you be so kind to give me", Environment.UserName);
 			Console.WriteLine("the path to your extracted data\\world\\ folder?");

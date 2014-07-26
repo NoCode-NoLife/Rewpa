@@ -1,4 +1,4 @@
-wRAPE
+rewpa
 ==============================
 
 Tool to convert all world data from Mabinogi's client into Aura's region info format.
@@ -6,7 +6,7 @@ Tool to convert all world data from Mabinogi's client into Aura's region info fo
 Usage
 ------------------------------
 1. Extract the `world` folder from your client's pack files.
-2. Run wRAPE and follow the instructions.
+2. Run rewpa and follow the instructions.
 
 Links
 ------------------------------

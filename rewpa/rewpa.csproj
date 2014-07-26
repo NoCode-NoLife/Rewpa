@@ -8,8 +8,8 @@
     <ProjectGuid>{9456A994-FC92-4EA4-A775-184C949EA18F}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>wRAPE</RootNamespace>
-    <AssemblyName>wRAPE</AssemblyName>
+    <RootNamespace>rewpa</RootNamespace>
+    <AssemblyName>rewpa</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
