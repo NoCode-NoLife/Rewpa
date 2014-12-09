@@ -30,7 +30,6 @@ namespace rewpa
 		static void Main(string[] args)
 		{
 			var wPath = Settings.Default.World;
-			var sPath = Settings.Default.Save;
 			var path = "";
 
 			Console.WriteLine("rewpa");
@@ -58,27 +57,63 @@ namespace rewpa
 			Console.WriteLine("Let's take a look, give me just a minute.");
 			var world = new World(Path.Combine(wPath, "world.trn"));
 
+			Settings.Default.World = wPath;
+
 			Console.WriteLine("I've found a world consisting of {0} regions.", world.Regions.Count);
+
+			string method = "0";
+			while (method == "0")
+			{
+				Console.WriteLine("What would you like to export?");
+				Console.WriteLine("  1) World as .dat");
+				Console.WriteLine("  2) Spawn information as .txt");
+
+				method = Console.ReadLine();
+			}
+
 			Console.WriteLine("Where should I save my results?");
 
-			Console.Write("[{0}]: ", Settings.Default.Save);
-			path = Console.ReadLine();
-			if (!string.IsNullOrWhiteSpace(path))
-				sPath = path;
+			switch (method)
+			{
+				case "1":
+					{
+						path = GetOutputPath(Settings.Default.SaveWorldPath, "regioninfo.dat");
+						world.ExportWorldAsDat(path);
+						Settings.Default.SaveWorldPath = path;
+						break;
+					}
+				case "2":
+					{
+						path = GetOutputPath(Settings.Default.SaveSpawnPath, "creaturespawns.txt");
+						world.ExportSpawnsAsTxt(path);
+						Settings.Default.SaveSpawnPath = path;
+						break;
+					}
+			}
 
-			if (Directory.Exists(sPath))
-				sPath = Path.Combine(sPath, "regioninfo.dat");
-
-			Console.WriteLine("Very well.");
-			world.Export(sPath);
-
-			Settings.Default.World = wPath;
-			Settings.Default.Save = sPath;
 			Settings.Default.Save();
 
+			Console.WriteLine();
 			Console.WriteLine("I'm done. You can close me now.");
-			Console.WriteLine("I've written the result to '{0}'.", Path.GetFullPath(sPath));
+			Console.WriteLine("I've written the result to '{0}'.", Path.GetFullPath(path));
 			Console.ReadLine();
+		}
+
+		static string GetOutputPath(string defaultPath, string defaultFileName)
+		{
+			var path = "";
+
+			Console.Write("[{0}]: ", defaultPath);
+			path = Console.ReadLine();
+			if (string.IsNullOrWhiteSpace(path))
+				path = defaultPath;
+
+			if (Directory.Exists(path))
+				path = Path.Combine(path, defaultFileName);
+
+			Console.WriteLine("Very well.");
+
+			return path;
 		}
 	}
 
@@ -117,7 +152,7 @@ namespace rewpa
 			});
 		}
 
-		public void Export(string path)
+		public void ExportWorldAsDat(string path)
 		{
 			using (var ms = new MemoryStream())
 			using (var bw = new BinaryWriter(ms))
@@ -229,6 +264,32 @@ namespace rewpa
 					File.WriteAllBytes(path, mout.ToArray());
 				}
 			}
+		}
+
+		public void ExportSpawnsAsTxt(string filepath)
+		{
+			var sb = new StringBuilder();
+
+			foreach (var region in Regions.OrderBy(a => a.RegionId))
+			{
+				foreach (var area in region.Areas.OrderBy(a => a.AreaId))
+				{
+					foreach (var ev in area.Events.Where(a => a.EventType == 2000).OrderBy(a => a.EventId))
+					{
+						foreach (var parameter in ev.Parameters)
+						{
+							sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", region.RegionId, area.AreaId, ev.EventId, parameter.EventType, parameter.XML);
+							foreach (var shape in ev.Shape)
+							{
+								sb.AppendFormat("{0}, {1}, ", shape.P1, shape.P2);
+							}
+							sb.AppendLine();
+						}
+					}
+				}
+			}
+
+			File.WriteAllText(filepath, sb.ToString());
 		}
 	}
 

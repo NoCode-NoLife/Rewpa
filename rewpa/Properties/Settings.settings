@@ -5,7 +5,10 @@
     <Setting Name="World" Type="System.String" Scope="User">
       <Value Profile="(Default)">./</Value>
     </Setting>
-    <Setting Name="Save" Type="System.String" Scope="User">
+    <Setting Name="SaveWorldPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">./</Value>
+    </Setting>
+    <Setting Name="SaveSpawnPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">./</Value>
     </Setting>
   </Settings>

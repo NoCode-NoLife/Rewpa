@@ -38,12 +38,24 @@ namespace rewpa.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("./")]
-        public string Save {
+        public string SaveWorldPath {
             get {
-                return ((string)(this["Save"]));
+                return ((string)(this["SaveWorldPath"]));
             }
             set {
-                this["Save"] = value;
+                this["SaveWorldPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("./")]
+        public string SaveSpawnPath {
+            get {
+                return ((string)(this["SaveSpawnPath"]));
+            }
+            set {
+                this["SaveSpawnPath"] = value;
             }
         }
     }
