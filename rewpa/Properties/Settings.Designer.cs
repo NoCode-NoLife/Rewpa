@@ -58,5 +58,17 @@ namespace rewpa.Properties {
                 this["SaveSpawnPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("./")]
+        public string SaveRegionsPath {
+            get {
+                return ((string)(this["SaveRegionsPath"]));
+            }
+            set {
+                this["SaveRegionsPath"] = value;
+            }
+        }
     }
 }

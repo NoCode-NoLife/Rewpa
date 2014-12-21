@@ -11,5 +11,8 @@
     <Setting Name="SaveSpawnPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">./</Value>
     </Setting>
+    <Setting Name="SaveRegionsPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">./</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
