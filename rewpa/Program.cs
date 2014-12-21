@@ -595,7 +595,6 @@ namespace rewpa
 				for (int i = 0; i < propCount; ++i)
 				{
 					var prop = new Prop();
-					this.Props.Add(prop);
 
 					prop.ClassId = br.ReadInt32();
 					prop.PropId = br.ReadInt64();
@@ -652,6 +651,13 @@ namespace rewpa
 						if (!exists)
 							prop.Parameters.Add(new PropParameter(eventType, signalType, name, xml));
 					}
+
+					// Filter Tir anniversary props
+					// TODO: Use prop db to check for the feature?
+					if ((Name == "field_Tir_S_aa" || Name == "field_Tir_S_ba") && prop.ClassId > 44000)
+						continue;
+
+					this.Props.Add(prop);
 				}
 
 				for (int i = 0; i < eventCount; ++i)
