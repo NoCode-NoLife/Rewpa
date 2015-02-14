@@ -174,6 +174,7 @@ namespace rewpa
 				Regions.ForEach(region =>
 				{
 					bw.Write(region.RegionId);
+					bw.Write(region.GroupId);
 
 					// Bounds
 					int x1, y1, x2, y2;
