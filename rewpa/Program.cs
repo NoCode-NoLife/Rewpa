@@ -313,13 +313,13 @@ namespace rewpa
 			sb.AppendLine("// Database file");
 			sb.AppendLine("// ");
 			sb.AppendLine("// Structure:");
-			sb.AppendLine("// Id  Name  // ClientName");
+			sb.AppendLine("// Id  Name");
 			sb.AppendLine("//---------------------------------------------------------------------------");
 			sb.AppendLine();
 
 			foreach (var region in Regions.OrderBy(a => a.RegionId))
 			{
-				sb.AppendFormat("{0}, {1}// {2}", region.RegionId, region.Name.PadRight(78 - region.RegionId.ToString().Length, ' '), region.ClientName);
+				sb.AppendFormat("{0}, \"{2}\"", region.RegionId, region.Name, region.ClientName);
 				sb.AppendLine();
 			}
 
