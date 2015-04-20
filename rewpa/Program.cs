@@ -153,7 +153,7 @@ namespace rewpa
 			Regions = Regions.OrderBy(a => a.RegionId).ToList();
 			Regions.ForEach(region =>
 			{
-				region.Areas = region.Areas.OrderBy(a => a.AreaId).ToList();
+				region.Areas = region.Areas.ToList();
 				region.Areas.ForEach(area =>
 				{
 					area.Props = area.Props.OrderBy(prop => prop.PropId).ToList();
@@ -285,7 +285,7 @@ namespace rewpa
 
 			foreach (var region in Regions.OrderBy(a => a.RegionId))
 			{
-				foreach (var area in region.Areas.OrderBy(a => a.AreaId))
+				foreach (var area in region.Areas)
 				{
 					foreach (var ev in area.Events.Where(a => a.EventType == 2000).OrderBy(a => a.EventId))
 					{
