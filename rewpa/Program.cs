@@ -287,15 +287,17 @@ namespace rewpa
 			{
 				foreach (var area in region.Areas)
 				{
-					foreach (var ev in area.Events.Where(a => a.EventType == 2000).OrderBy(a => a.EventId))
+					foreach (var ev in area.Events.Where(a => a.EventType % 2000 == 0).OrderBy(a => a.EventId))
 					{
-						foreach (var parameter in ev.Parameters)
+						foreach (var parameter in ev.Parameters.Where(a => a.XML.Contains("group")))
 						{
-							sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", region.RegionId, area.AreaId, ev.EventId, parameter.EventType, parameter.XML);
+							sb.AppendFormat("region: {0}, area: {1}, id: {2:X16}, name: '{5}/{6}/{7}', xml: '{4}', coords: ",
+								region.RegionId, area.AreaId, ev.EventId, parameter.EventType, parameter.XML, region.ClientName, area.Name, ev.Name);
+
 							foreach (var shape in ev.Shape)
-							{
-								sb.AppendFormat("{0}, {1}, ", shape.P1, shape.P2);
-							}
+								sb.AppendFormat("{0},{1}, {2},{3}, ", shape.P1.X, shape.P1.Y, shape.P2.X, shape.P2.Y);
+
+							sb.Remove(sb.Length - 2, 2);
 							sb.AppendLine();
 						}
 					}
