@@ -287,12 +287,12 @@ namespace rewpa
 			{
 				foreach (var area in region.Areas)
 				{
-					foreach (var ev in area.Events.Where(a => a.EventType % 2000 == 0).OrderBy(a => a.EventId))
+					foreach (var ev in area.Events.OrderBy(a => a.EventId))
 					{
 						foreach (var parameter in ev.Parameters.Where(a => a.XML.Contains("group")))
 						{
-							sb.AppendFormat("region: {0}, area: {1}, id: {2:X16}, name: '{5}/{6}/{7}', xml: '{4}', coords: ",
-								region.RegionId, area.AreaId, ev.EventId, parameter.EventType, parameter.XML, region.ClientName, area.Name, ev.Name);
+							sb.AppendFormat("region: {0}, area: {1}, id: {2:X16}, type: {8}, pType: {3}, name: '{5}/{6}/{7}', xml: '{4}', coords: ",
+								region.RegionId, area.AreaId, ev.EventId, parameter.EventType, parameter.XML, region.ClientName, area.Name, ev.Name, ev.EventType);
 
 							foreach (var shape in ev.Shape)
 								sb.AppendFormat("{0},{1}, {2},{3}, ", shape.P1.X, shape.P1.Y, shape.P2.X, shape.P2.Y);
@@ -571,7 +571,7 @@ namespace rewpa
 				br.Skip(0x02); // Unk
 				br.Skip(0x04); // Unk
 				AreaId = br.ReadInt16();
-				br.ReadInt16(); // Unk
+				var regionId = br.ReadInt16(); // Unk
 				Server = br.ReadUnicodeString();
 				Name = br.ReadUnicodeString();
 				br.Skip(0x10); // Unk
@@ -676,7 +676,6 @@ namespace rewpa
 					var shapeCount = br.ReadByte();
 					br.Skip(0x04); // Unk 
 
-					float test = 0;
 					for (int j = 0; j < shapeCount; ++j)
 					{
 						var dirX1 = br.ReadSingle();
@@ -687,7 +686,7 @@ namespace rewpa
 						var lenY = br.ReadSingle();
 						br.Skip(0x04); // Unk
 						var posX = br.ReadSingle();
-						var posY = test = br.ReadSingle();
+						var posY = br.ReadSingle();
 						br.Skip(0x10); // Unk
 
 						ev.Shape.AddRange(GetShapeLines(dirX1, dirX2, dirY1, dirY2, lenX, lenY, posX, posY));
