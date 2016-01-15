@@ -218,13 +218,17 @@ namespace rewpa
 							//bw.Write(prop.Solid);
 
 							// Shape
-							bw.Write(prop.Shape.Count / 2);
-							prop.Shape.ForEach(line =>
+							bw.Write(prop.Shapes.Count);
+							prop.Shapes.ForEach(shape =>
 							{
-								bw.Write(line.P1.X);
-								bw.Write(line.P1.Y);
-								bw.Write(line.P2.X);
-								bw.Write(line.P2.Y);
+								bw.Write(shape.DirX1);
+								bw.Write(shape.DirX2);
+								bw.Write(shape.DirY1);
+								bw.Write(shape.DirY2);
+								bw.Write(shape.LenX);
+								bw.Write(shape.LenY);
+								bw.Write(shape.PosX);
+								bw.Write(shape.PosY);
 							});
 
 							// Parameters
@@ -249,13 +253,17 @@ namespace rewpa
 							bw.Write(ei.EventType);
 
 							// Shape
-							bw.Write(ei.Shape.Count / 2);
-							ei.Shape.ForEach(line =>
+							bw.Write(ei.Shapes.Count);
+							ei.Shapes.ForEach(shape =>
 							{
-								bw.Write(line.P1.X);
-								bw.Write(line.P1.Y);
-								bw.Write(line.P2.X);
-								bw.Write(line.P2.Y);
+								bw.Write(shape.DirX1);
+								bw.Write(shape.DirX2);
+								bw.Write(shape.DirY1);
+								bw.Write(shape.DirY2);
+								bw.Write(shape.LenX);
+								bw.Write(shape.LenY);
+								bw.Write(shape.PosX);
+								bw.Write(shape.PosY);
 							});
 
 							// Parameters
@@ -298,8 +306,12 @@ namespace rewpa
 							sb.AppendFormat("region: {0}, area: {1}, id: {2:X16}, type: {8}, pType: {3}, name: '{5}/{6}/{7}', xml: '{4}', coords: ",
 								region.RegionId, area.AreaId, ev.EventId, parameter.EventType, parameter.XML, region.ClientName, area.Name, ev.Name, ev.EventType);
 
-							foreach (var shape in ev.Shape)
-								sb.AppendFormat("{0},{1}, {2},{3}, ", shape.P1.X, shape.P1.Y, shape.P2.X, shape.P2.Y);
+							foreach (var shape in ev.Shapes)
+							{
+								var points = shape.GetPoints();
+								foreach (var point in points)
+									sb.AppendFormat("{0}, ", point);
+							}
 
 							sb.Remove(sb.Length - 2, 2);
 							sb.AppendLine();
@@ -601,63 +613,7 @@ namespace rewpa
 
 				for (int i = 0; i < propCount; ++i)
 				{
-					var prop = new Prop();
-
-					prop.ClassId = br.ReadInt32();
-					prop.PropId = br.ReadInt64();
-					prop.Name = br.ReadUnicodeString();
-					prop.X = br.ReadSingle();
-					prop.Y = br.ReadSingle();
-					br.Skip(0x04); // Unk (Z?)
-					var shapeCount = br.ReadByte();
-					br.Skip(0x04); // Unk 
-
-					for (int j = 0; j < shapeCount; ++j)
-					{
-						var dirX1 = br.ReadSingle();
-						var dirX2 = br.ReadSingle();
-						var dirY1 = br.ReadSingle();
-						var dirY2 = br.ReadSingle();
-						var lenX = br.ReadSingle();
-						var lenY = br.ReadSingle();
-						br.Skip(0x04); // Unk
-						var posX = br.ReadSingle();
-						var posY = br.ReadSingle();
-						br.Skip(0x10); // Unk
-
-						prop.Shape.AddRange(GetShapeLines(dirX1, dirX2, dirY1, dirY2, lenX, lenY, posX, posY));
-					}
-
-					prop.Solid = (br.ReadByte() != 0);
-					br.ReadByte(); // Unk
-					prop.Scale = br.ReadSingle();
-					prop.Direction = br.ReadSingle();
-					br.Skip(0x40); // Unk
-					br.ReadUnicodeString(); // title
-					br.ReadUnicodeString(); // state
-					var parameterCount = br.ReadByte();
-					for (int k = 0; k < parameterCount; ++k)
-					{
-						var def = br.ReadByte();
-						var eventType = br.ReadInt32();
-						var signalType = br.ReadInt32();
-						var name = br.ReadUnicodeString();
-						var xml = br.ReadUnicodeString();
-
-						// Add identical parameters only once
-						var exists = false;
-						foreach (var param in prop.Parameters)
-						{
-							if (param.EventType == eventType && param.SignalType == signalType && param.Name == name && param.XML == xml)
-							{
-								exists = true;
-								break;
-							}
-						}
-
-						if (!exists)
-							prop.Parameters.Add(new PropParameter(eventType, signalType, name, xml));
-					}
+					var prop = this.ReadProp(br);
 
 					// Filter Tir anniversary props
 					// TODO: Use prop db to check for the feature?
@@ -682,18 +638,19 @@ namespace rewpa
 
 					for (int j = 0; j < shapeCount; ++j)
 					{
-						var dirX1 = br.ReadSingle();
-						var dirX2 = br.ReadSingle();
-						var dirY1 = br.ReadSingle();
-						var dirY2 = br.ReadSingle();
-						var lenX = br.ReadSingle();
-						var lenY = br.ReadSingle();
-						br.Skip(0x04); // Unk
-						var posX = br.ReadSingle();
-						var posY = br.ReadSingle();
+						var shape = new Shape();
+						shape.DirX1 = br.ReadSingle();
+						shape.DirX2 = br.ReadSingle();
+						shape.DirY1 = br.ReadSingle();
+						shape.DirY2 = br.ReadSingle();
+						shape.LenX = br.ReadSingle();
+						shape.LenY = br.ReadSingle();
+						var shapeType = br.ReadInt32();
+						shape.PosX = br.ReadSingle();
+						shape.PosY = br.ReadSingle();
 						br.Skip(0x10); // Unk
 
-						ev.Shape.AddRange(GetShapeLines(dirX1, dirX2, dirY1, dirY2, lenX, lenY, posX, posY));
+						ev.Shapes.Add(shape);
 					}
 
 					ev.EventType = br.ReadInt32();
@@ -712,23 +669,136 @@ namespace rewpa
 			}
 		}
 
-		private Line[] GetShapeLines(float dirX1, float dirX2, float dirY1, float dirY2, float lenX, float lenY, float posX, float posY)
+		private Prop ReadProp(BinaryReader br)
+		{
+			var prop = new Prop();
+
+			prop.ClassId = br.ReadInt32();
+			prop.PropId = br.ReadInt64();
+			prop.Name = br.ReadUnicodeString();
+			prop.X = br.ReadSingle();
+			prop.Y = br.ReadSingle();
+			br.Skip(0x04); // Unk (Z?)
+			var shapeCount = br.ReadByte();
+			br.Skip(0x04); // Unk 
+
+			for (int j = 0; j < shapeCount; ++j)
+			{
+				var shape = new Shape();
+				shape.DirX1 = br.ReadSingle();
+				shape.DirX2 = br.ReadSingle();
+				shape.DirY1 = br.ReadSingle();
+				shape.DirY2 = br.ReadSingle();
+				shape.LenX = br.ReadSingle();
+				shape.LenY = br.ReadSingle();
+				var shapeType = br.ReadInt32();
+				shape.PosX = br.ReadSingle();
+				shape.PosY = br.ReadSingle();
+				br.Skip(0x10); // Unk
+
+				prop.Shapes.Add(shape);
+			}
+
+			prop.Solid = (br.ReadByte() != 0);
+			br.ReadByte(); // Unk
+			prop.Scale = br.ReadSingle();
+			prop.Direction = br.ReadSingle();
+			br.Skip(0x40); // colors
+			br.ReadUnicodeString(); // title
+			br.ReadUnicodeString(); // state
+			var parameterCount = br.ReadByte();
+			for (int k = 0; k < parameterCount; ++k)
+			{
+				var def = br.ReadByte();
+				var eventType = br.ReadInt32();
+				var signalType = br.ReadInt32();
+				var name = br.ReadUnicodeString();
+				var xml = br.ReadUnicodeString();
+
+				// Add identical parameters only once
+				var exists = false;
+				foreach (var param in prop.Parameters)
+				{
+					if (param.EventType == eventType && param.SignalType == signalType && param.Name == name && param.XML == xml)
+					{
+						exists = true;
+						break;
+					}
+				}
+
+				if (!exists)
+					prop.Parameters.Add(new PropParameter(eventType, signalType, name, xml));
+			}
+
+			return prop;
+		}
+	}
+
+	public class Prop
+	{
+		public int ClassId { get; set; }
+		public long PropId { get; set; }
+		public string Name { get; set; }
+		public float X { get; set; }
+		public float Y { get; set; }
+		public List<Shape> Shapes { get; set; }
+		public bool Solid { get; set; }
+		public float Scale { get; set; }
+		public float Direction { get; set; }
+		public List<PropParameter> Parameters { get; set; }
+
+		public Prop()
+		{
+			Shapes = new List<Shape>();
+			Parameters = new List<PropParameter>();
+		}
+	}
+
+	public class Event
+	{
+		public long EventId { get; set; }
+		public string Name { get; set; }
+		public float X { get; set; }
+		public float Y { get; set; }
+		public List<Shape> Shapes { get; set; }
+		public int EventType { get; set; }
+		public List<PropParameter> Parameters { get; set; }
+
+		public Event()
+		{
+			Shapes = new List<Shape>();
+			Parameters = new List<PropParameter>();
+		}
+	}
+
+	public class Shape
+	{
+		public float DirX1 { get; set; }
+		public float DirX2 { get; set; }
+		public float DirY1 { get; set; }
+		public float DirY2 { get; set; }
+		public float LenX { get; set; }
+		public float LenY { get; set; }
+		public float PosX { get; set; }
+		public float PosY { get; set; }
+
+		public Point[] GetPoints()
 		{
 			var points = new Point[4];
 
-			double a00 = dirX1 * lenX;
-			double a01 = dirX2 * lenX;
-			double a02 = dirY1 * lenY;
-			double a03 = dirY2 * lenY;
+			double a00 = this.DirX1 * this.LenX;
+			double a01 = this.DirX2 * this.LenX;
+			double a02 = this.DirY1 * this.LenY;
+			double a03 = this.DirY2 * this.LenY;
 
-			double sx1 = posX - a00 - a02; if (sx1 < posX) sx1 = Math.Ceiling(sx1);
-			double sy1 = posY - a01 - a03; if (sy1 < posY) sy1 = Math.Ceiling(sy1);
-			double sx2 = posX + a00 - a02; if (sx2 < posX) sx2 = Math.Ceiling(sx2);
-			double sy2 = posY + a01 - a03; if (sy2 < posY) sy2 = Math.Ceiling(sy2);
-			double sx3 = posX + a00 + a02; if (sx3 < posX) sx3 = Math.Ceiling(sx3);
-			double sy3 = posY + a01 + a03; if (sy3 < posY) sy3 = Math.Ceiling(sy3);
-			double sx4 = posX - a00 + a02; if (sx4 < posX) sx4 = Math.Ceiling(sx4);
-			double sy4 = posY - a01 + a03; if (sy4 < posY) sy4 = Math.Ceiling(sy4);
+			double sx1 = this.PosX - a00 - a02; if (sx1 < this.PosX) sx1 = Math.Ceiling(sx1);
+			double sy1 = this.PosY - a01 - a03; if (sy1 < this.PosY) sy1 = Math.Ceiling(sy1);
+			double sx2 = this.PosX + a00 - a02; if (sx2 < this.PosX) sx2 = Math.Ceiling(sx2);
+			double sy2 = this.PosY + a01 - a03; if (sy2 < this.PosY) sy2 = Math.Ceiling(sy2);
+			double sx3 = this.PosX + a00 + a02; if (sx3 < this.PosX) sx3 = Math.Ceiling(sx3);
+			double sy3 = this.PosY + a01 + a03; if (sy3 < this.PosY) sy3 = Math.Ceiling(sy3);
+			double sx4 = this.PosX - a00 + a02; if (sx4 < this.PosX) sx4 = Math.Ceiling(sx4);
+			double sy4 = this.PosY - a01 + a03; if (sy4 < this.PosY) sy4 = Math.Ceiling(sy4);
 
 			if (a02 * a01 > a03 * a00)
 			{
@@ -745,48 +815,7 @@ namespace rewpa
 				points[1] = new Point((int)sx4, (int)sy4);
 			}
 
-			var result = new Line[2];
-			result[0] = new Line(points[0], points[1]);
-			result[1] = new Line(points[2], points[3]);
-
-			return result;
-		}
-	}
-
-	public class Prop
-	{
-		public int ClassId { get; set; }
-		public long PropId { get; set; }
-		public string Name { get; set; }
-		public float X { get; set; }
-		public float Y { get; set; }
-		public List<Line> Shape { get; set; }
-		public bool Solid { get; set; }
-		public float Scale { get; set; }
-		public float Direction { get; set; }
-		public List<PropParameter> Parameters { get; set; }
-
-		public Prop()
-		{
-			Shape = new List<Line>();
-			Parameters = new List<PropParameter>();
-		}
-	}
-
-	public class Event
-	{
-		public long EventId { get; set; }
-		public string Name { get; set; }
-		public float X { get; set; }
-		public float Y { get; set; }
-		public List<Line> Shape { get; set; }
-		public int EventType { get; set; }
-		public List<PropParameter> Parameters { get; set; }
-
-		public Event()
-		{
-			Shape = new List<Line>();
-			Parameters = new List<PropParameter>();
+			return points;
 		}
 	}
 
