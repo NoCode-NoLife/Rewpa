@@ -215,6 +215,7 @@ namespace rewpa
 							bw.Write(prop.Y);
 							bw.Write(prop.Direction);
 							bw.Write(prop.Scale);
+							bw.Write(prop.State);
 							//bw.Write(prop.Solid);
 
 							// Shape
@@ -711,7 +712,7 @@ namespace rewpa
 			prop.Direction = br.ReadSingle();
 			br.Skip(0x40); // colors
 			br.ReadUnicodeString(); // title
-			br.ReadUnicodeString(); // state
+			prop.State = br.ReadUnicodeString();
 			var parameterCount = br.ReadByte();
 			for (int k = 0; k < parameterCount; ++k)
 			{
@@ -751,6 +752,7 @@ namespace rewpa
 		public bool Solid { get; set; }
 		public float Scale { get; set; }
 		public float Direction { get; set; }
+		public string State { get; set; }
 		public List<PropParameter> Parameters { get; set; }
 
 		public Prop()
