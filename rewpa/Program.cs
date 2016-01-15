@@ -620,6 +620,12 @@ namespace rewpa
 					if ((Name == "field_Tir_S_aa" || Name == "field_Tir_S_ba") && prop.ClassId > 44000)
 						continue;
 
+					// Filter blocking fence used in Bangor and Sen Mag town
+					// in early gens to stop players from going there.
+					// Prop is only enabled before G4: feature="-401"
+					if (prop.ClassId == 41277)
+						continue;
+
 					this.Props.Add(prop);
 				}
 
