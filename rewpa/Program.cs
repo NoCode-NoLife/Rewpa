@@ -23,6 +23,7 @@ using System.Text;
 using System.Xml;
 using rewpa.Properties;
 using System.Text.RegularExpressions;
+using MackLib;
 
 namespace rewpa
 {
@@ -32,11 +33,12 @@ namespace rewpa
 		{
 			var wPath = Settings.Default.World;
 			var path = "";
+			var pack = (PackReader)null;
 
 			Console.WriteLine("rewpa");
 			Console.WriteLine();
 			Console.WriteLine("Hi there, {0}! Would you be so kind to give me", Environment.UserName);
-			Console.WriteLine("the path to your extracted data\\world\\ folder?");
+			Console.WriteLine("the path to the package folder you'd like to use?");
 
 			while (true)
 			{
@@ -47,16 +49,29 @@ namespace rewpa
 
 				wPath = wPath.Trim().Trim('"');
 
-				if (File.Exists(Path.Combine(wPath, "world.trn")))
-					break;
+				if (Directory.EnumerateFiles(wPath, "*_full.pack", SearchOption.TopDirectoryOnly).Count() == 0)
+				{
+					Console.WriteLine("No... that doesn't seem to be correct, I can't find a '_full.pack' file.");
+					Console.WriteLine("Try again, please.");
+					continue;
+				}
 
-				Console.WriteLine("No... that doesn't seem to be correct,  I can't find the 'world.trn' file.");
-				Console.WriteLine("Try again, please.");
+				pack = new PackReader(wPath);
+				if (!pack.Exists(@"world\world.trn"))
+				{
+					Console.WriteLine("I couldn't find the 'world.trn' file in those packages,");
+					Console.WriteLine("please give me the path to a Mabinogi package folder.");
+					Console.WriteLine("Try again, please.");
+					continue;
+				}
+
+				break;
 			}
 
 			Console.WriteLine();
 			Console.WriteLine("Let's take a look, give me just a minute.");
-			var world = new World(Path.Combine(wPath, "world.trn"));
+
+			var world = new World(pack);
 
 			Settings.Default.World = wPath;
 
@@ -131,11 +146,12 @@ namespace rewpa
 	{
 		public List<Region> Regions { get; set; }
 
-		public World(string path)
+		public World(PackReader pack)
 		{
 			this.Regions = new List<Region>();
 
-			using (var trnReader = XmlReader.Create(path))
+			using (var ms = pack.GetEntry(@"world\world.trn").GetDataAsStream())
+			using (var trnReader = XmlReader.Create(ms))
 			{
 				if (!trnReader.ReadToDescendant("regions"))
 					return;
@@ -144,7 +160,10 @@ namespace rewpa
 				{
 					while (trnRegionsReader.ReadToFollowing("region"))
 					{
-						var region = new Region(Path.Combine(Path.GetDirectoryName(path), trnRegionsReader.GetAttribute("workdir"), trnReader.GetAttribute("name") + ".rgn"));
+						var workDir = trnRegionsReader.GetAttribute("workdir");
+						var fileName = trnReader.GetAttribute("name");
+
+						var region = new Region(pack, workDir, fileName);
 						this.Regions.Add(region);
 					}
 				}
@@ -362,12 +381,14 @@ namespace rewpa
 
 		public List<Area> Areas { get; set; }
 
-		public Region(string path)
+		public Region(PackReader pack, string workDir, string fileName)
 		{
 			this.Areas = new List<Area>();
 
-			using (var fs = new FileStream(path, FileMode.Open))
-			using (var br = new BinaryReader(fs))
+			var regionFilePath = Path.Combine("world", workDir, fileName + ".rgn");
+
+			using (var ms = pack.GetEntry(regionFilePath).GetDataAsStream())
+			using (var br = new BinaryReader(ms))
 			{
 				Version = br.ReadInt32();
 				br.ReadInt32(); // Unk
@@ -387,7 +408,7 @@ namespace rewpa
 				for (int i = 0; i < areaCount; ++i)
 				{
 					var areaName = br.ReadUnicodeString();
-					var area = new Area(Path.Combine(Path.GetDirectoryName(path), areaName + ".area"));
+					var area = new Area(pack, workDir, areaName);
 					Areas.Add(area);
 				}
 
@@ -573,13 +594,15 @@ namespace rewpa
 		public List<Prop> Props { get; set; }
 		public List<Event> Events { get; set; }
 
-		public Area(string path)
+		public Area(PackReader pack, string workDir, string fileName)
 		{
 			this.Props = new List<Prop>();
 			this.Events = new List<Event>();
 
-			using (var fs = new FileStream(path, FileMode.Open))
-			using (var br = new BinaryReader(fs))
+			var areaFilePath = Path.Combine("world", workDir, fileName + ".area");
+
+			using (var ms = pack.GetEntry(areaFilePath).GetDataAsStream())
+			using (var br = new BinaryReader(ms))
 			{
 				Version = br.ReadInt16();
 				if (Version < 202)
