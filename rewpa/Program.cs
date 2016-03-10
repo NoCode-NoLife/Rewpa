@@ -75,9 +75,9 @@ namespace rewpa
 			while (method == "0")
 			{
 				Console.WriteLine("What would you like to export?");
-				Console.WriteLine("  1) World as .dat");
+				Console.WriteLine("  1) Region data (regioninfo.dat)");
 				Console.WriteLine("  2) Spawn information as .txt");
-				Console.WriteLine("  3) Region list as .txt");
+				Console.WriteLine("  3) Region list (regions.txt)");
 				Console.Write(": ");
 
 				method = Console.ReadLine();
