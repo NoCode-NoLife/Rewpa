@@ -48,14 +48,20 @@ namespace rewpa
 
 				using (var trnRegionsReader = trnReader.ReadSubtree())
 				{
+					var i = 1;
 					while (trnRegionsReader.ReadToFollowing("region"))
 					{
 						var workDir = trnRegionsReader.GetAttribute("workdir");
 						var fileName = trnReader.GetAttribute("name");
 
+						Console.Write("\r".PadRight(70) + "\r");
+						Console.Write("Reading {0}: {1}...", i++, fileName);
+
 						var region = new Region(pack, workDir, fileName, propClasses, features);
 						this.Regions.Add(region);
 					}
+
+					Console.WriteLine("\r".PadRight(70) + "\r");
 				}
 			}
 
