@@ -38,7 +38,7 @@ namespace rewpa
 
 		public List<Area> Areas { get; set; }
 
-		public Region(PackReader pack, string workDir, string fileName)
+		public Region(PackReader pack, string workDir, string fileName, Dictionary<int, PropClass> propClasses, FeaturesFile features)
 		{
 			this.Areas = new List<Area>();
 
@@ -71,7 +71,7 @@ namespace rewpa
 				for (int i = 0; i < areaCount; ++i)
 				{
 					var areaName = br.ReadUnicodeString();
-					var area = new Area(pack, workDir, areaName);
+					var area = new Area(pack, workDir, areaName, propClasses, features);
 					Areas.Add(area);
 				}
 

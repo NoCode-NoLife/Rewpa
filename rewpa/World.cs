@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using MackLib;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -31,6 +32,14 @@ namespace rewpa
 		{
 			this.Regions = new List<Region>();
 
+			Dictionary<int, PropClass> propClasses;
+			using (var ms = pack.GetEntry(@"db\propdb.xml").GetDataAsStream())
+				propClasses = PropClass.ReadFromXml(ms);
+
+			FeaturesFile features;
+			using (var ms = pack.GetEntry(@"features.xml.compiled").GetDataAsStream())
+				features = new FeaturesFile(ms, "Regular, USA");
+
 			using (var ms = pack.GetEntry(@"world\world.trn").GetDataAsStream())
 			using (var trnReader = XmlReader.Create(ms))
 			{
@@ -44,7 +53,7 @@ namespace rewpa
 						var workDir = trnRegionsReader.GetAttribute("workdir");
 						var fileName = trnReader.GetAttribute("name");
 
-						var region = new Region(pack, workDir, fileName);
+						var region = new Region(pack, workDir, fileName, propClasses, features);
 						this.Regions.Add(region);
 					}
 				}

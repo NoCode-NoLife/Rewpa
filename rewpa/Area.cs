@@ -17,6 +17,7 @@ using MackLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace rewpa
 {
@@ -34,7 +35,7 @@ namespace rewpa
 		public List<Prop> Props { get; set; }
 		public List<Event> Events { get; set; }
 
-		public Area(PackReader pack, string workDir, string fileName)
+		public Area(PackReader pack, string workDir, string fileName, Dictionary<int, PropClass> propClasses, FeaturesFile features)
 		{
 			this.Props = new List<Prop>();
 			this.Events = new List<Event>();
@@ -79,16 +80,71 @@ namespace rewpa
 				{
 					var prop = this.ReadProp(br);
 
-					// Filter Tir anniversary props
-					// TODO: Use prop db to check for the feature?
-					if ((Name == "field_Tir_S_aa" || Name == "field_Tir_S_ba") && prop.ClassId > 44000)
-						continue;
+					// Get prop data for features check
+					PropClass cls;
+					if (!propClasses.TryGetValue(prop.ClassId, out cls))
+						throw new Exception("Unknown prop class.");
 
-					// Filter blocking fence used in Bangor and Sen Mag town
-					// in early gens to stop players from going there.
-					// Prop is only enabled before G4: feature="-401"
-					if (prop.ClassId == 41277)
+					//if (prop.ClassId == 44824)
+					//	Console.WriteLine("asd");
+
+					// Check feature
+					var feature = cls.GetExtra("feature");
+					var enabled = true;
+					if (!string.IsNullOrWhiteSpace(feature))
+					{
+						var found = false;
+
+						// Check for features that aren't in the features file
+						foreach (var nf in new string[] { "bossrush", "dungeonrenewal", "partyboard" })
+						{
+							if (feature == "-" + nf)
+							{
+								enabled = false;
+								found = true;
+								break;
+							}
+							else if (feature == nf)
+							{
+								enabled = true;
+								found = true;
+								break;
+							}
+						}
+
+						if (!found)
+							enabled = features.IsEnabled(feature);
+					}
+
+					// Even with the feature check a few props slip through,
+					// it's unknown how the client decides not to load those.
+					// However, those I found so far all had the /event/ tag
+					// and UsedServer.
+					// 
+					// South Tir Chonaill
+					//   41146, scene_prop_mapletree_01
+					//   41963, scene_prop_memory_tree_01
+					//   41288, scene_prop_cherrytree_01
+					//   42340, scene_prop_balloon_01
+					//
+					// Dunbarton Square
+					//   41625, scene_prop_christmas_2008_light_03
+					// 
+					// I don't know why the area files would contain props
+					// that are never loaded and expected to come from the
+					// server, but for now the following check seems to work
+					// fine.
+					// 
+					// As of the time of this comment 120 props are excluded
+					// via feature check, plus 76 by the event check.
+					if (cls.StringID.Contains("/event/") && cls.UsedServer)
+						enabled = false;
+
+					if (!enabled)
+					{
+						//File.AppendAllText("test.txt", cls.ClassID + ", " + cls.ClassName + ", " + cls.StringID + ", " + cls.UsedServer + Environment.NewLine);
 						continue;
+					}
 
 					this.Props.Add(prop);
 				}
