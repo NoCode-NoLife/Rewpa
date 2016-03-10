@@ -230,17 +230,19 @@ namespace rewpa
 
 			sb.AppendLine("// Aura");
 			sb.AppendLine("// Database file");
-			sb.AppendLine("// ");
-			sb.AppendLine("// Structure:");
-			sb.AppendLine("// Id  Name");
 			sb.AppendLine("//---------------------------------------------------------------------------");
 			sb.AppendLine();
 
+			sb.AppendLine("[");
 			foreach (var region in Regions.OrderBy(a => a.RegionId))
 			{
-				sb.AppendFormat("{0}, \"{2}\"", region.RegionId, region.Name, region.ClientName);
-				sb.AppendLine();
+				sb.Append("{ ");
+				sb.AppendFormat("id: {0}", region.RegionId);
+				sb.AppendFormat(", name: \"{0}\"", region.ClientName);
+				sb.AppendFormat(", indoor: {0}", (region.IndoorType == 100).ToString().ToLower());
+				sb.AppendLine(" },");
 			}
+			sb.AppendLine("]");
 
 			File.WriteAllText(filepath, sb.ToString());
 		}

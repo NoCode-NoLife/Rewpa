@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using MackLib;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -29,6 +30,8 @@ namespace rewpa
 		public int CellSize { get; set; }
 		public byte Sight { get; set; }
 		public string Scene { get; set; }
+		public int AreaType { get; set; }
+		public int IndoorType { get; set; }
 		public string Camera { get; set; }
 		public string Light { get; set; }
 		public string XML { get; set; }
@@ -52,12 +55,18 @@ namespace rewpa
 				CellSize = br.ReadInt32();
 				Sight = br.ReadByte();
 				var areaCount = br.ReadInt32();
-				br.Skip(0x40); // Unk
+				br.Skip(0x34); // Unk
+				AreaType = br.ReadInt32();
+				IndoorType = br.ReadInt32();
+				br.Skip(0x4); // Unk
 				Scene = br.ReadUnicodeString();
 				br.Skip(0x2D); // Unk
 				Camera = br.ReadUnicodeString();
 				Light = br.ReadUnicodeString();
 				br.Skip(0x0C); // Unk
+
+				if (IndoorType != 100 && IndoorType != 200)
+					throw new Exception("Unknown indoor type.");
 
 				for (int i = 0; i < areaCount; ++i)
 				{
