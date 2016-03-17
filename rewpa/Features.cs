@@ -170,6 +170,7 @@ namespace rewpa
 					fFeature.Disable = Encoding.UTF8.GetString(buffer, 0, num);
 				}
 
+				fFeature.ParseWith(setting);
 				features.Add(fFeature);
 			}
 		}
@@ -191,9 +192,7 @@ namespace rewpa
 			{
 				var feature = features.FirstOrDefault(a => a.Hash == GetStringHash(featureName));
 				if (feature != null)
-				{
-
-				}
+					result = feature.Enabled;
 			}
 
 			return (negate ? !result : result);
@@ -231,14 +230,14 @@ namespace rewpa
 			{
 				var match = Regex.Match(Enable, @"G[^,@]*@" + setting.Locale);
 				if (match.Success)
-					Enabled = (setting.GS >= GetGS(match.Groups[1].Value));
+					Enabled = (setting.GS >= GetGS(match.Groups[0].Value));
 			}
 
 			if (!string.IsNullOrWhiteSpace(Disable))
 			{
 				var match = Regex.Match(Disable, @"G[^,@]*@" + setting.Locale);
 				if (match.Success)
-					Enabled = (setting.GS < GetGS(match.Groups[1].Value));
+					Enabled = (setting.GS < GetGS(match.Groups[0].Value));
 			}
 		}
 
