@@ -30,6 +30,7 @@ namespace rewpa
 		public bool Solid { get; set; }
 		public float Scale { get; set; }
 		public float Direction { get; set; }
+		public string Title { get; set; }
 		public string State { get; set; }
 		public List<PropParameter> Parameters { get; set; }
 

@@ -130,6 +130,7 @@ namespace rewpa
 							bw.Write(prop.Y);
 							bw.Write(prop.Direction);
 							bw.Write(prop.Scale);
+							bw.Write(prop.Title);
 							bw.Write(prop.State);
 							//bw.Write(prop.Solid);
 

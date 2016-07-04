@@ -230,7 +230,7 @@ namespace rewpa
 			prop.Scale = br.ReadSingle();
 			prop.Direction = br.ReadSingle();
 			br.Skip(0x40); // colors
-			br.ReadUnicodeString(); // title
+			prop.Title = br.ReadUnicodeString(); // title
 			prop.State = br.ReadUnicodeString();
 			var parameterCount = br.ReadByte();
 			for (int k = 0; k < parameterCount; ++k)
