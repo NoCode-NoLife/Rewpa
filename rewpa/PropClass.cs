@@ -57,13 +57,22 @@ namespace rewpa
 					data.ClassID = Convert.ToInt32(reader.GetAttribute("ClassID"));
 					data.ClassName = reader.GetAttribute("ClassName");
 					data.StringID = reader.GetAttribute("StringID") ?? "";
-					data.UsedServer = (reader.GetAttribute("UsedServer").ToLower() == "true");
+					data.UsedServer = (reader.GetAttribute("UsedServer") != null && reader.GetAttribute("UsedServer").ToLower() == "true");
 
 					var extraXml = reader.GetAttribute("ExtraXML");
 					if (!string.IsNullOrWhiteSpace(extraXml))
 					{
 						if (!extraXml.Trim().EndsWith("/>") && !extraXml.Trim().EndsWith("</xml>"))
 							extraXml = extraXml.Trim('>') + "/>";
+
+						if (extraXml.Contains("sit_motion=\"98\"hideidle=\""))
+							extraXml = extraXml.Replace("sit_motion=\"98\"hideidle=\"", "sit_motion=\"98\" hideidle=\"");
+						if (extraXml.Contains("sit_motion=\"89\"sit_motion2=\"90\""))
+							extraXml = extraXml.Replace("sit_motion=\"89\"sit_motion2=\"90\"", "sit_motion=\"89\" sit_motion2=\"90\"");
+						if (extraXml.Contains("sit_motion = \"27\" sit_motion_category=\"2\" sit_motion=\"102\""))
+							extraXml = extraXml.Replace("sit_motion = \"27\" sit_motion_category=\"2\" sit_motion=\"102\"", "sit_motion = \"27\" sit_motion_category=\"2\"");
+						if (extraXml.Contains("\"101\"hideidle=\"false\""))
+							extraXml = extraXml.Replace("\"101\"hideidle=\"false\"", "\"101\" hideidle=\"false\"");
 
 						var xel = XElement.Parse(extraXml);
 						foreach (var attr in xel.Attributes())
