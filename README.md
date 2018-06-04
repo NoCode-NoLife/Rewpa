@@ -1,6 +1,8 @@
 rewpa
 ==============================
 
+**Note: This version of rewpa is no longer supported, use https://github.com/exectails/rewpa.**
+
 Tool to convert all world data from Mabinogi's client into Aura's region info format.
 
 Usage
